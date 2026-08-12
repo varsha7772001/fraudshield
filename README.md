@@ -56,11 +56,8 @@ The project is structured into distinct phases, each handling a specific part of
    pip install -r requirements.txt
    ```
 
-4. **Kaggle API Setup** (for automatic data download):
-   - Create a Kaggle account and download your API token (`kaggle.json`).
-   - Place `kaggle.json` in `~/.kaggle/kaggle.json` (or `C:\Users\<YourUsername>\.kaggle\kaggle.json` on Windows).
-   - Ensure the file has appropriate read permissions.
-   - If the `data/raw` folder is empty, the pipeline will automatically download the [IEEE-CIS Fraud Detection dataset](https://www.kaggle.com/competitions/ieee-fraud-detection/data).
+4. **Data Download**:
+   - The pipeline will automatically download the required datasets from Google Drive into the `data/raw` folder if they are not already present.
 
 ## 💻 Usage
 
