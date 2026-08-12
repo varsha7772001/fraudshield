@@ -17,9 +17,10 @@ class MissingValueImputer:
         self.numerical_fill_values: dict[str, float] = {}
         self.categorical_fill_values: dict[str, str] = {}
 
+
     def fit(
-        self,
-        dataframe: pd.DataFrame,
+    self,
+    dataframe: pd.DataFrame,
     ) -> "MissingValueImputer":
 
         print("Fitting missing value imputer...")
@@ -33,19 +34,33 @@ class MissingValueImputer:
         ).columns
 
         # ------------------------------------------------------
-        # Numerical columns
+        # Only process numerical columns that contain NaN
         # ------------------------------------------------------
+
+        numerical_missing_columns = (
+            dataframe[numerical_columns]
+            .columns[
+                dataframe[numerical_columns]
+                .isna()
+                .any()
+            ]
+        )
+
+        print(
+            f"Numerical columns with missing values : "
+            f"{len(numerical_missing_columns)}"
+        )
 
         if self.numerical_strategy == "mean":
 
             values = dataframe[
-                numerical_columns
+                numerical_missing_columns
             ].mean()
 
         else:
 
             values = dataframe[
-                numerical_columns
+                numerical_missing_columns
             ].median()
 
         self.numerical_fill_values = (
@@ -58,39 +73,43 @@ class MissingValueImputer:
         # Categorical columns
         # ------------------------------------------------------
 
+        categorical_missing_columns = (
+            dataframe[categorical_columns]
+            .columns[
+                dataframe[categorical_columns]
+                .isna()
+                .any()
+            ]
+        )
+
+        print(
+            f"Categorical columns with missing values : "
+            f"{len(categorical_missing_columns)}"
+        )
+
         if self.categorical_strategy == "missing":
 
             self.categorical_fill_values = {
                 column: "Missing"
-                for column in categorical_columns
+                for column in categorical_missing_columns
             }
 
         else:
 
-            for column in categorical_columns:
+            for column in categorical_missing_columns:
 
                 mode = dataframe[column].mode()
 
-                if mode.empty:
+                value = (
+                    mode.iloc[0]
+                    if not mode.empty
+                    else "Missing"
+                )
 
-                    value = "Missing"
-
-                else:
-
-                    value = mode.iloc[0]
-
-                self.categorical_fill_values[
-                    column
-                ] = value
+                self.categorical_fill_values[column] = value
 
         print(
-            f"Numerical columns   : "
-            f"{len(self.numerical_fill_values)}"
-        )
-
-        print(
-            f"Categorical columns : "
-            f"{len(self.categorical_fill_values)}"
+            "Missing value imputer fitted."
         )
 
         return self
