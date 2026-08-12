@@ -22,6 +22,8 @@ class MissingValueImputer:
         dataframe: pd.DataFrame,
     ) -> "MissingValueImputer":
 
+        print("Fitting missing value imputer...")
+
         numerical_columns = dataframe.select_dtypes(
             include=["number"]
         ).columns
@@ -30,33 +32,66 @@ class MissingValueImputer:
             exclude=["number"]
         ).columns
 
-        for column in numerical_columns:
+        # ------------------------------------------------------
+        # Numerical columns
+        # ------------------------------------------------------
 
-            if self.numerical_strategy == "mean":
-                value = dataframe[column].mean()
+        if self.numerical_strategy == "mean":
 
-            else:
-                value = dataframe[column].median()
+            values = dataframe[
+                numerical_columns
+            ].mean()
 
-            self.numerical_fill_values[column] = value
+        else:
 
-        for column in categorical_columns:
+            values = dataframe[
+                numerical_columns
+            ].median()
 
-            if self.categorical_strategy == "mode":
+        self.numerical_fill_values = (
+            values
+            .dropna()
+            .to_dict()
+        )
+
+        # ------------------------------------------------------
+        # Categorical columns
+        # ------------------------------------------------------
+
+        if self.categorical_strategy == "missing":
+
+            self.categorical_fill_values = {
+                column: "Missing"
+                for column in categorical_columns
+            }
+
+        else:
+
+            for column in categorical_columns:
 
                 mode = dataframe[column].mode()
 
-                value = (
-                    mode.iloc[0]
-                    if not mode.empty
-                    else "Missing"
-                )
+                if mode.empty:
 
-            else:
+                    value = "Missing"
 
-                value = "Missing"
+                else:
 
-            self.categorical_fill_values[column] = value
+                    value = mode.iloc[0]
+
+                self.categorical_fill_values[
+                    column
+                ] = value
+
+        print(
+            f"Numerical columns   : "
+            f"{len(self.numerical_fill_values)}"
+        )
+
+        print(
+            f"Categorical columns : "
+            f"{len(self.categorical_fill_values)}"
+        )
 
         return self
 
@@ -65,25 +100,42 @@ class MissingValueImputer:
         dataframe: pd.DataFrame,
     ) -> pd.DataFrame:
 
+        print("Transforming missing values...")
+
+        # Make one copy because we don't want to modify
+        # the original train/test dataframe.
+
         transformed = dataframe.copy()
 
-        for (
-            column,
-            value,
-        ) in self.numerical_fill_values.items():
+        # ------------------------------------------------------
+        # Numerical columns
+        # ------------------------------------------------------
 
-            transformed[column] = transformed[column].fillna(
-                value
+        if self.numerical_fill_values:
+
+            transformed[
+                list(self.numerical_fill_values.keys())
+            ] = transformed[
+                list(self.numerical_fill_values.keys())
+            ].fillna(
+                self.numerical_fill_values
             )
 
-        for (
-            column,
-            value,
-        ) in self.categorical_fill_values.items():
+        # ------------------------------------------------------
+        # Categorical columns
+        # ------------------------------------------------------
 
-            transformed[column] = transformed[column].fillna(
-                value
+        if self.categorical_fill_values:
+
+            transformed[
+                list(self.categorical_fill_values.keys())
+            ] = transformed[
+                list(self.categorical_fill_values.keys())
+            ].fillna(
+                self.categorical_fill_values
             )
+
+        print("Missing value transformation complete.")
 
         return transformed
 
