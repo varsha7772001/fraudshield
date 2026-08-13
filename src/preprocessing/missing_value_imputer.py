@@ -113,38 +113,11 @@ class MissingValueImputer:
 
         print("Transforming missing values...")
 
-        # Make one copy because we don't want to modify
-        # the original train/test dataframe.
+        # Combine numerical and categorical fill values
+        fill_values = {**self.numerical_fill_values, **self.categorical_fill_values}
 
-        transformed = dataframe.copy()
-
-        # ------------------------------------------------------
-        # Numerical columns
-        # ------------------------------------------------------
-
-        if self.numerical_fill_values:
-
-            transformed[
-                list(self.numerical_fill_values.keys())
-            ] = transformed[
-                list(self.numerical_fill_values.keys())
-            ].fillna(
-                self.numerical_fill_values
-            )
-
-        # ------------------------------------------------------
-        # Categorical columns
-        # ------------------------------------------------------
-
-        if self.categorical_fill_values:
-
-            transformed[
-                list(self.categorical_fill_values.keys())
-            ] = transformed[
-                list(self.categorical_fill_values.keys())
-            ].fillna(
-                self.categorical_fill_values
-            )
+        # fillna returns a new dataframe by default, preserving the original
+        transformed = dataframe.fillna(value=fill_values)
 
         print("Missing value transformation complete.")
 
