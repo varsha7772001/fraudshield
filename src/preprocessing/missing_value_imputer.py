@@ -25,18 +25,16 @@ class MissingValueImputer:
 
         print("Fitting missing value imputer...")
 
-        numerical_columns = dataframe.select_dtypes(
-            include=["number"]
-        ).columns
-
-        categorical_columns = dataframe.select_dtypes(
-            exclude=["number"]
-        ).columns
+        print("Selecting numerical and categorical columns...")
+        dtypes = dataframe.dtypes
+        numerical_columns = dtypes[dtypes.map(pd.api.types.is_numeric_dtype)].index
+        categorical_columns = dtypes[~dtypes.map(pd.api.types.is_numeric_dtype)].index
 
         # ------------------------------------------------------
         # Only process numerical columns that contain NaN
         # ------------------------------------------------------
 
+        print("Finding numerical columns with missing values...")
         numerical_missing_columns = pd.Index([
             col for col in numerical_columns
             if dataframe[col].hasnans
@@ -47,17 +45,17 @@ class MissingValueImputer:
             f"{len(numerical_missing_columns)}"
         )
 
+        print(f"Calculating {self.numerical_strategy} for numerical columns...")
         if self.numerical_strategy == "mean":
-
-            values = dataframe[
-                numerical_missing_columns
-            ].mean()
-
+            values = pd.Series({
+                col: dataframe[col].mean()
+                for col in numerical_missing_columns
+            })
         else:
-
-            values = dataframe[
-                numerical_missing_columns
-            ].median()
+            values = pd.Series({
+                col: dataframe[col].median()
+                for col in numerical_missing_columns
+            })
 
         self.numerical_fill_values = (
             values
@@ -69,6 +67,7 @@ class MissingValueImputer:
         # Categorical columns
         # ------------------------------------------------------
 
+        print("Finding categorical columns with missing values...")
         categorical_missing_columns = pd.Index([
             col for col in categorical_columns
             if dataframe[col].hasnans
@@ -79,6 +78,7 @@ class MissingValueImputer:
             f"{len(categorical_missing_columns)}"
         )
 
+        print(f"Applying '{self.categorical_strategy}' strategy for categorical columns...")
         if self.categorical_strategy == "missing":
 
             self.categorical_fill_values = {
