@@ -56,14 +56,14 @@ class DatasetValidator:
         )
 
         if transaction_duplicates == 0:
-            print("✓ Transaction table has unique TransactionID values.")
+            print("[OK] Transaction table has unique TransactionID values.")
         else:
-            print("✗ Transaction table contains duplicate TransactionID values.")
+            print("[FAIL] Transaction table contains duplicate TransactionID values.")
 
         if identity_duplicates == 0:
-            print("✓ Identity table has unique TransactionID values.")
+            print("[OK] Identity table has unique TransactionID values.")
         else:
-            print("✗ Identity table contains duplicate TransactionID values.")
+            print("[FAIL] Identity table contains duplicate TransactionID values.")
 
     def validate_transaction_relationship(self) -> None:
         """

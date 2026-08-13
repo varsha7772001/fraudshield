@@ -37,14 +37,10 @@ class MissingValueImputer:
         # Only process numerical columns that contain NaN
         # ------------------------------------------------------
 
-        numerical_missing_columns = (
-            dataframe[numerical_columns]
-            .columns[
-                dataframe[numerical_columns]
-                .isna()
-                .any()
-            ]
-        )
+        numerical_missing_columns = pd.Index([
+            col for col in numerical_columns
+            if dataframe[col].hasnans
+        ])
 
         print(
             f"Numerical columns with missing values : "
@@ -73,14 +69,10 @@ class MissingValueImputer:
         # Categorical columns
         # ------------------------------------------------------
 
-        categorical_missing_columns = (
-            dataframe[categorical_columns]
-            .columns[
-                dataframe[categorical_columns]
-                .isna()
-                .any()
-            ]
-        )
+        categorical_missing_columns = pd.Index([
+            col for col in categorical_columns
+            if dataframe[col].hasnans
+        ])
 
         print(
             f"Categorical columns with missing values : "
